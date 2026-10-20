@@ -65,14 +65,14 @@
     const first = startPoint;
     startPoint = null;
     const range = rangeBetween(first, point);
-    if (!range || range.collapsed || !range.toString()) {
+    const selectedText = range ? textForRange(range) : "";
+    if (!range || range.collapsed || !selectedText) {
       showHint("No selectable text at those points");
       return;
     }
     const selection = window.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-    const selectedText = selection.toString();
     const rangeRect = range.getBoundingClientRect();
     Promise.all([copyText(selectedText), saveCapture({ content: selectedText, type: "text" })]).then(([copied, saved]) => {
       if (saved) {
@@ -155,6 +155,41 @@
     } catch {
       return null;
     }
+  }
+
+  function textForRange(range) {
+    const startCell = githubCodeCell(range.startContainer);
+    const endCell = githubCodeCell(range.endContainer);
+    const table = startCell?.closest("table.js-file-line-container, table.highlight");
+    if (!table || endCell?.closest("table") !== table ||
+        !startCell.contains(range.startContainer) || !endCell.contains(range.endContainer)) {
+      return range.toString();
+    }
+
+    const cells = [...table.querySelectorAll("td.blob-code-inner, td.blob-code[id^='LC']")];
+    const startIndex = cells.indexOf(startCell);
+    const endIndex = cells.indexOf(endCell);
+    if (startIndex < 0 || endIndex < startIndex) return range.toString();
+
+    const lines = [];
+    for (let index = startIndex; index <= endIndex; index++) {
+      const cell = cells[index];
+      const lineRange = document.createRange();
+      lineRange.selectNodeContents(cell);
+      if (index === startIndex) lineRange.setStart(range.startContainer, range.startOffset);
+      if (index === endIndex) lineRange.setEnd(range.endContainer, range.endOffset);
+      lines.push(lineRange.toString());
+    }
+    return lines.join("\n");
+  }
+
+  function githubCodeCell(node) {
+    const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    if (!element) return null;
+    const cell = element.closest("td.blob-code-inner, td.blob-code[id^='LC']");
+    if (cell) return cell;
+    const row = element.closest("tr");
+    return row?.querySelector("td.blob-code-inner, td.blob-code[id^='LC']") || null;
   }
 
   async function copyText(text) {
