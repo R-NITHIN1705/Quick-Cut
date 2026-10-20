@@ -1,9 +1,0 @@
-{
-  "name": "quickcut-extension",
-  "version": "1.0.0",
-  "private": true,
-  "description": "QuickCut Chrome extension release tooling",
-  "scripts": {
-    "package": "node scripts/package.cjs"
-  }
-}
