@@ -56,7 +56,7 @@ kbd { padding: 1px 5px; border: 1px solid #e8e4dd; border-radius: 4px; color: #a
 .capture-source { overflow: hidden; color: #858178; font-size: 10px; text-overflow: ellipsis; white-space: nowrap; }
 .capture-time { flex: 0 0 auto; margin-left: auto; color: #aaa69e; font-size: 10px; }
 .capture-preview { display: -webkit-box; overflow: hidden; margin: 0 0 9px; color: #393833; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.capture-preview.code-preview { padding: 6px 8px; border-radius: 6px; color: #554f75; background: #f3f1f8; font: 10px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.capture-preview.code-preview { padding: 6px 8px; border-radius: 6px; color: #554f75; background: #f3f1f8; font: 10px/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; }
 .capture-actions { display: flex; gap: 6px; }
 .action-button { display: inline-flex; align-items: center; justify-content:center; width:30px; height:30px; overflow:hidden; padding: 4px 7px; border: 1px solid #e9e6e0; border-radius: 9px; color: #625f58; background: #fff; font-size: 0; }
 .action-button::first-letter { font-size: 15px; }
