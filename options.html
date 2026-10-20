@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>QuickCut settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="settings-page">
+    <header class="page-header">
+      <img src="icons/quickcut.svg" width="42" height="42" alt="">
+      <div><p class="eyebrow">QUICKCUT</p><h1>Settings</h1></div>
+    </header>
+
+    <section class="setting-card">
+      <div class="section-heading"><div><h2>Sound feedback</h2><p>Small, locally generated sounds for QuickCut actions.</p></div><span class="section-icon" aria-hidden="true">♫</span></div>
+      <label class="toggle-row" for="sound-enabled"><span><strong>Play sounds</strong><small>Activation, capture, copy, and cancel</small></span><input id="sound-enabled" type="checkbox" role="switch"></label>
+      <div class="volume-row"><label for="sound-volume">Volume</label><input id="sound-volume" type="range" min="0" max="100" step="1"><output id="volume-value" for="sound-volume">35%</output></div>
+      <div class="volume-row"><label for="cut-sound">Cut sound</label><select id="cut-sound"><option value="snip">Classic snip</option><option value="sweep">Soft sweep</option></select><button id="preview-cut-sound" class="button button-quiet" type="button">Preview</button></div>
+      <p id="sound-status" class="inline-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="setting-card">
+      <div class="section-heading"><div><h2>Capture history</h2><p>Older captures are removed when the saved-item limit is reached.</p></div><span class="section-icon" aria-hidden="true">▤</span></div>
+      <label for="history-limit">Maximum saved items</label>
+      <div class="limit-row"><input id="history-limit" type="number" min="1" max="10000" step="1" value="200"><button id="save-limit" class="button" type="button">Save limit</button></div>
+      <p class="field-help">Default: 200. Choose a whole number from 1 to 10000.</p>
+      <div class="divider"></div>
+      <div class="clear-row"><span><strong>Clear history</strong><small>Remove every saved text capture and link.</small></span><button id="clear-history" class="button button-outline-danger" type="button">Clear history</button></div>
+      <div id="clear-confirm" class="confirm-box" hidden><span>Clear all saved captures? This cannot be undone.</span><div><button id="cancel-clear" class="button button-quiet" type="button">Cancel</button><button id="confirm-clear" class="button button-danger" type="button">Clear all</button></div></div>
+      <p id="history-status" class="inline-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="setting-card shortcuts-card">
+      <div class="section-heading"><div><h2>Keyboard shortcuts</h2><p>Change shortcuts in Chrome. Defaults avoid common browser combinations.</p></div><span class="section-icon" aria-hidden="true">⌘</span></div>
+      <div id="shortcut-list" class="shortcut-list"><p class="field-help">Loading shortcuts…</p></div>
+      <button id="shortcut-page" class="button" type="button">Configure shortcuts in Chrome <span aria-hidden="true">↗</span></button>
+      <p class="field-help">Escape always cancels an active selection or link-capture mode.</p>
+    </section>
+
+    <p id="global-error" class="global-error" role="status" aria-live="polite"></p>
+  </main>
+  <script src="sounds/sounds.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>
