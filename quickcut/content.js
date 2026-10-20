@@ -71,10 +71,15 @@
       return;
     }
     const selection = window.getSelection();
+    if (!selection) {
+      showHint("Could not select that text on this page");
+      return;
+    }
     selection.removeAllRanges();
     selection.addRange(range);
     const rangeRect = range.getBoundingClientRect();
-    Promise.all([copyText(selectedText), saveCapture({ content: selectedText, type: "text" })]).then(([copied, saved]) => {
+    const captureType = isCodeRange(range) ? "code" : "text";
+    Promise.all([copyText(selectedText), saveCapture({ content: selectedText, type: captureType })]).then(([copied, saved]) => {
       if (saved) {
         showSavedAt(rangeRect.left + rangeRect.width / 2, rangeRect.top);
         playSound("capture");
@@ -192,18 +197,37 @@
     return row?.querySelector("td.blob-code-inner, td.blob-code[id^='LC']") || null;
   }
 
+  function isCodeRange(range) {
+    const selector = "pre, code, .blob-code-inner, td.blob-code";
+    return [range.startContainer, range.endContainer].some((node) => {
+      const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+      return Boolean(element?.closest(selector) || githubCodeCell(node));
+    });
+  }
+
   async function copyText(text) {
     try {
       await navigator.clipboard.writeText(text);
       return true;
     } catch {
       try {
+        let clipboardUpdated = false;
         const handler = (event) => {
-          event.clipboardData.setData("text/plain", text);
-          event.preventDefault();
+          try {
+            if (!event.clipboardData) return;
+            event.clipboardData.setData("text/plain", text);
+            event.preventDefault();
+            clipboardUpdated = true;
+          } catch {
+            clipboardUpdated = false;
+          }
         };
-        document.addEventListener("copy", handler, { once: true, capture: true });
-        return document.execCommand("copy");
+        document.addEventListener("copy", handler, true);
+        try {
+          return document.execCommand("copy") && clipboardUpdated;
+        } finally {
+          document.removeEventListener("copy", handler, true);
+        }
       } catch {
         return false;
       }
