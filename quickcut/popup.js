@@ -187,11 +187,13 @@ async function copyAgain(content) {
     field.value = content;
     field.setAttribute("readonly", "");
     Object.assign(field.style, { position: "fixed", opacity: "0", pointerEvents: "none" });
-    document.body.append(field);
-    field.select();
-    const copied = document.execCommand("copy");
-    field.remove();
-    if (!copied) throw new Error("Clipboard write failed");
+    try {
+      document.body.append(field);
+      field.select();
+      if (!document.execCommand("copy")) throw new Error("Clipboard write failed");
+    } finally {
+      field.remove();
+    }
   }
 }
 

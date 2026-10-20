@@ -166,26 +166,59 @@
     const startCell = githubCodeCell(range.startContainer);
     const endCell = githubCodeCell(range.endContainer);
     const table = startCell?.closest("table.js-file-line-container, table.highlight");
-    if (!table || endCell?.closest("table") !== table ||
-        !startCell.contains(range.startContainer) || !endCell.contains(range.endContainer)) {
-      return range.toString();
+    if (table && endCell?.closest("table") === table &&
+        startCell.contains(range.startContainer) && endCell.contains(range.endContainer)) {
+      const cells = [...table.querySelectorAll("td.blob-code-inner, td.blob-code[id^='LC']")];
+      return textAcrossLines(range, cells, startCell, endCell);
     }
 
-    const cells = [...table.querySelectorAll("td.blob-code-inner, td.blob-code[id^='LC']")];
-    const startIndex = cells.indexOf(startCell);
-    const endIndex = cells.indexOf(endCell);
+    // Several code hosts render each source line as a separate block. Range.toString()
+    // omits the visual line breaks between those blocks, so rebuild the selection
+    // from the line elements when both endpoints belong to the same code view.
+    const lineSelector = "td.line_content, .line-content, .react-code-line";
+    const startLine = closestElement(range.startContainer, lineSelector);
+    const endLine = closestElement(range.endContainer, lineSelector);
+    if (!startLine || !endLine || !startLine.contains(range.startContainer) ||
+        !endLine.contains(range.endContainer)) return range.toString();
+
+    const commonParent = commonAncestor(startLine, endLine);
+    if (!commonParent) return range.toString();
+    const lines = [
+      ...(commonParent.matches(lineSelector) ? [commonParent] : []),
+      ...commonParent.querySelectorAll(lineSelector)
+    ];
+    return textAcrossLines(range, lines, startLine, endLine);
+  }
+
+  function closestElement(node, selector) {
+    const element = node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement;
+    return element?.closest(selector) || null;
+  }
+
+  function textAcrossLines(range, lines, startLine, endLine) {
+    const startIndex = lines.indexOf(startLine);
+    const endIndex = lines.indexOf(endLine);
     if (startIndex < 0 || endIndex < startIndex) return range.toString();
 
-    const lines = [];
+    const selectedLines = [];
     for (let index = startIndex; index <= endIndex; index++) {
-      const cell = cells[index];
+      const line = lines[index];
       const lineRange = document.createRange();
-      lineRange.selectNodeContents(cell);
+      lineRange.selectNodeContents(line);
       if (index === startIndex) lineRange.setStart(range.startContainer, range.startOffset);
       if (index === endIndex) lineRange.setEnd(range.endContainer, range.endOffset);
-      lines.push(lineRange.toString());
+      selectedLines.push(lineRange.toString());
     }
-    return lines.join("\n");
+    return selectedLines.join("\n");
+  }
+
+  function commonAncestor(first, second) {
+    const ancestors = new Set();
+    for (let node = first; node; node = node.parentElement) ancestors.add(node);
+    for (let node = second; node; node = node.parentElement) {
+      if (ancestors.has(node)) return node;
+    }
+    return null;
   }
 
   function githubCodeCell(node) {
